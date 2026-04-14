@@ -516,20 +516,177 @@ tbody td:first-child { padding-left: 20px; }
   .dashboard { grid-template-columns: repeat(4,1fr); }
 }
 
-/* ── RESPONSIVE ──────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile-first breakpoints
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1200px: tablet landscape ───────────────────────────────────── */
 @media (max-width: 1200px) {
-  .dashboard { grid-template-columns: repeat(2, 1fr); }
-  .two-col { grid-template-columns: 1fr; }
+  .dashboard  { grid-template-columns: repeat(2, 1fr); }
+  .two-col    { grid-template-columns: 1fr; }
 }
+
+/* ── 900px: tablet portrait ─────────────────────────────────────── */
+@media (max-width: 900px) {
+  main { padding: 24px 20px 56px; }
+  header { padding: 0 20px; gap: 12px; }
+
+  /* Shrink logo text a bit */
+  .logo-name { font-size: 1.1rem; }
+  .logo-tag  { display: none; }
+
+  /* Tighter header right */
+  .date-chip  { display: none; }
+}
+
+/* ── 760px: large phone / small tablet ──────────────────────────── */
 @media (max-width: 760px) {
-  main { padding: 20px 16px 48px; }
-  header { padding: 0 16px; }
+  main   { padding: 16px 12px 72px; }
+  header { padding: 0 14px; height: 56px; }
+
+  /* Hide desktop nav — replaced by bottom tab bar below */
   .main-nav { display: none; }
-  .dashboard { grid-template-columns: 1fr 1fr; }
+
+  /* 2-col dashboard */
+  .dashboard { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+  /* Smaller stat cards */
+  .stat-card  { padding: 16px 16px 14px; }
+  .stat-value { font-size: 1.5rem; }
+  .stat-icon  { width: 36px; height: 36px; font-size: 1rem; }
+
+  /* Section header wraps on small screens */
+  .section-header {
+    flex-wrap: wrap; gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* Dashboard toolbar stacks */
+  .table-toolbar {
+    flex-wrap: wrap; gap: 8px; padding: 10px 14px;
+  }
+  .table-toolbar .search-wrap { width: 100%; flex: none; }
+  .table-toolbar .filter-select { flex: 1; min-width: 120px; }
+
+  /* Inventory table: hide less-important columns */
+  .tbl-wrap table thead th:nth-child(3),  /* Original Price */
+  .tbl-wrap table tbody td:nth-child(3),
+  .tbl-wrap table thead th:nth-child(5),  /* Margin */
+  .tbl-wrap table tbody td:nth-child(5),
+  .tbl-wrap table thead th:nth-child(6),  /* Total Sold */
+  .tbl-wrap table tbody td:nth-child(6)  { display: none; }
+
+  /* History table: hide SKU + Customer on mobile */
+  #historyBody tr td:nth-child(3),
+  #historyBody tr td:nth-child(9),
+  .tbl-wrap table thead th:nth-child(3):not(.keep),
+  .tbl-wrap table thead th:nth-child(9) { display: none; }
+
+  /* Two-col becomes single col */
+  .two-col { grid-template-columns: 1fr; gap: 16px; margin-top: 20px; }
+
+  /* Sales card max height reduced */
+  .sales-card { max-height: 300px; }
+
+  /* Cart panel full width */
+  .sell-panel { padding: 16px; }
+  .cart-add-row { flex-wrap: wrap; }
+  .cart-add-row .form-group:first-child { flex: 100%; }
+
+  /* Modals full-width on mobile */
+  .modal {
+    margin: 12px;
+    padding: 20px 18px 18px;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  /* Sync badge — icon only */
+  .sync-badge { padding: 5px 8px; }
+  .sync-badge span:last-child { display: none; }
 }
+
+/* ── 500px: phone portrait ──────────────────────────────────────── */
 @media (max-width: 500px) {
-  .dashboard { grid-template-columns: 1fr; }
-  .modal-grid { grid-template-columns: 1fr; }
+  main   { padding: 12px 10px 72px; }
+  header { padding: 0 12px; }
+
+  /* Single col dashboard */
+  .dashboard { grid-template-columns: 1fr; gap: 10px; }
+
+  /* Stat cards horizontal layout on phone */
+  .stat-card-top { align-items: center; }
+  .stat-value    { font-size: 1.4rem; }
+
+  /* Modal always single-col grid */
+  .modal-grid    { grid-template-columns: 1fr; }
+
+  /* User chip — avatar only */
+  .user-info     { display: none; }
+  .user-chip     { padding: 4px 8px 4px 4px; }
+
+  /* History footer stacks */
+  .history-footer-row {
+    flex-direction: column; gap: 4px; align-items: flex-start;
+    padding: 10px 14px;
+  }
+
+  /* Toast narrower */
+  .toasts        { right: 10px; bottom: 72px; }
+  .toast         { min-width: 0; max-width: calc(100vw - 20px); }
+
+  /* Idle warning full-width */
+  .idle-warning  { right: 10px; left: 10px; max-width: none; bottom: 72px; }
+
+  /* Section header action buttons wrap under title */
+  .section-header { flex-direction: column; align-items: flex-start; }
+  .section-header > div { width: 100%; justify-content: flex-start; }
+
+  /* Charts label narrower */
+  .chart-label   { min-width: 100px; max-width: 100px; font-size: 0.72rem; }
+  .chart-val     { min-width: 58px; font-size: 0.7rem; }
+
+  /* Table cells tighter */
+  tbody td       { padding: 10px 10px; }
+  tbody td:first-child { padding-left: 12px; }
+  thead th       { padding: 10px 10px; }
+  thead th:first-child { padding-left: 12px; }
+}
+
+/* ── BOTTOM NAV BAR (replaces top nav on mobile) ────────────────── */
+@media (max-width: 760px) {
+  /* Spacer so content isn't hidden behind bottom nav */
+  main { padding-bottom: 72px; }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(79,110,247,0.06);
+    height: 58px;
+  }
+
+  .bottom-nav a {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text3);
+    font-size: 0.58rem; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    transition: color 0.2s;
+    padding: 6px 0;
+  }
+
+  .bottom-nav a .nav-icon { font-size: 1.2rem; line-height: 1; }
+  .bottom-nav a.active    { color: var(--accent); }
+  .bottom-nav a:hover     { color: var(--accent); }
+}
+
+@media (min-width: 761px) {
+  .bottom-nav { display: none; }
 }
 
 /* ── LOGIN PAGE ──────────────────────────────────────────────────── */
@@ -1017,4 +1174,3 @@ body.login-page {
     bottom: 80px;
   }
 }
-
