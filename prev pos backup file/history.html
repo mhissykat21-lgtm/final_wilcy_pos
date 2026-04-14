@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WILCY POS — Sales History</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">W</div>
+    <span class="logo-name">WILCY <span>POS</span></span>
+    <span class="logo-tag">History</span>
+  </div>
+  <nav class="main-nav">
+    <a href="index.html"   class="nav-link">Dashboard</a>
+    <a href="history.html" class="nav-link active">Sales History</a>
+  </nav>
+  <div class="header-right">
+    <div id="syncStatus" class="sync-badge sync-local">◉ Local</div>
+    <div class="date-chip" id="dateBadge"></div>
+    <div id="userChip"></div>
+  </div>
+</header>
+
+<main>
+
+  <div class="dashboard">
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Total Transactions</div>
+          <div class="stat-value val-blue" id="h-totalTxns">0</div>
+          <div class="stat-sub" id="h-txnSub">all time</div>
+        </div>
+        <div class="stat-icon icon-blue">🧾</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value val-pink" id="h-totalRev">₱0.00</div>
+          <div class="stat-sub" id="h-revSub">all time</div>
+        </div>
+        <div class="stat-icon icon-pink">💰</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Total Units Sold</div>
+          <div class="stat-value val-teal" id="h-unitsSold">0</div>
+          <div class="stat-sub" id="h-unitsSub">all time</div>
+        </div>
+        <div class="stat-icon icon-teal">📦</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Avg Sale Value</div>
+          <div class="stat-value val-green" id="h-avgSale">₱0.00</div>
+          <div class="stat-sub">per transaction</div>
+        </div>
+        <div class="stat-icon icon-green">📊</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Sales History</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-ghost btn-sm" onclick="exportSalesCSV()">⬇ Export CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Print</button>
+      <button class="clear-btn" onclick="clearAllSales()" data-role="admin">Clear All History</button>
+    </div>
+  </div>
+
+  <div class="table-card" style="margin-bottom:28px;">
+    <div class="table-toolbar" style="flex-wrap:wrap;gap:10px;">
+      <div class="search-wrap" style="min-width:200px;">
+        <span class="search-ico">⌕</span>
+        <input type="text" id="hSearch" placeholder="Search item or SKU…" oninput="renderHistory()">
+      </div>
+      <input type="date" id="hDateFrom" class="filter-date" onchange="renderHistory()">
+      <span style="font-size:0.8rem;color:var(--text3);">to</span>
+      <input type="date" id="hDateTo" class="filter-date" onchange="renderHistory()">
+      <select id="hPayFilter" class="filter-select" onchange="renderHistory()">
+        <option value="all">All Payments</option>
+        <option value="Cash">Cash</option>
+        <option value="GCash">GCash</option>
+        <option value="Maya">Maya</option>
+        <option value="Card">Card</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="resetHistoryFilters()">Reset</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortHistory('date')" class="sortable">Date / Time <span class="sort-ico" id="sort-date"></span></th>
+            <th onclick="sortHistory('itemName')" class="sortable">Item <span class="sort-ico" id="sort-itemName"></span></th>
+            <th>SKU</th>
+            <th onclick="sortHistory('qty')" class="sortable">Qty <span class="sort-ico" id="sort-qty"></span></th>
+            <th onclick="sortHistory('pricePerPc')" class="sortable">Price/pc <span class="sort-ico" id="sort-pricePerPc"></span></th>
+            <th onclick="sortHistory('total')" class="sortable">Total Sale <span class="sort-ico" id="sort-total"></span></th>
+            <th onclick="sortHistory('revenue')" class="sortable">Revenue <span class="sort-ico" id="sort-revenue"></span></th>
+            <th>Payment</th>
+            <th>Customer</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <div class="table-footer" id="historyFooter"></div>
+  </div>
+
+  <div class="two-col" style="margin-top:0;">
+    <div>
+      <div class="section-header"><div class="section-title">Top Items by Revenue</div></div>
+      <div class="table-card" style="padding:20px 22px;"><div id="topItemsChart"></div></div>
+    </div>
+    <div>
+      <div class="section-header"><div class="section-title">Revenue by Day</div></div>
+      <div class="table-card" style="padding:20px 22px;"><div id="dailyRevenueChart"></div></div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toasts" id="toastContainer"></div>
+<script src="auth.js"></script>
+<script src="sheets.js"></script>
+<script src="history.js"></script>
+</body>
+</html>

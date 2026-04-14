@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WILCY POS — Sign In</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <div class="login-brand">
+      <div class="logo-mark lg">W</div>
+      <div>
+        <div class="logo-name lg">WILCY <span>POS</span></div>
+        <div class="login-tagline">Point of Sale &amp; Inventory System</div>
+      </div>
+    </div>
+
+    <div class="login-divider"></div>
+
+    <p class="login-title">Welcome back</p>
+    <p class="login-sub">Sign in to access your dashboard.</p>
+
+    <div id="loginError" class="login-error" style="display:none"></div>
+
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password" />
+        <button class="pw-toggle" type="button" onclick="togglePw()" id="pwToggle">👁</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary login-btn" onclick="doLogin()">Sign In</button>
+
+    <div class="login-hint">
+      <strong>Demo credentials:</strong><br>
+      Admin — <code>admin</code> / <code>admin123</code><br>
+      Cashier — <code>cashier</code> / <code>pos2024</code>
+    </div>
+
+  </div>
+</div>
+
+<div class="toasts" id="toastContainer"></div>
+<script src="auth.js"></script>
+</body>
+</html>

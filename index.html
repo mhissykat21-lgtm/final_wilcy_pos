@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WILCY POS — Dashboard</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f6ef7">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WILCY POS">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">W</div>
+    <span class="logo-name">WILCY <span>POS</span></span>
+    <span class="logo-tag">Inventory</span>
+  </div>
+  <nav class="main-nav">
+    <a href="index.html"   class="nav-link active">Dashboard</a>
+    <a href="history.html" class="nav-link">Sales History</a>
+  </nav>
+  <div class="header-right">
+    <div id="syncStatus" class="sync-badge sync-local">◉ Local</div>
+    <div class="date-chip" id="dateBadge"></div>
+    <div id="userChip"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- DASHBOARD CARDS -->
+  <div class="dashboard">
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Total Sales Today</div>
+          <div class="stat-value val-blue" id="totalTxns">0</div>
+          <div class="stat-sub" id="totalItemsSub">0 items sold today</div>
+        </div>
+        <div class="stat-icon icon-blue">🧾</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Total Revenue Today</div>
+          <div class="stat-value val-pink" id="totalRevenue">₱0.00</div>
+          <div class="stat-sub" id="totalRevSub">from 0 transactions</div>
+        </div>
+        <div class="stat-icon icon-pink">💰</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Best Selling Item</div>
+          <div class="stat-value val-teal" id="bestSellerName" style="font-size:1.1rem;line-height:1.3;margin-top:4px;">—</div>
+          <div class="stat-sub" id="bestSellerSub">no sales recorded yet</div>
+        </div>
+        <div class="stat-icon icon-teal">🏆</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Total Stock Value</div>
+          <div class="stat-value val-green" id="stockValue">₱0.00</div>
+          <div class="stat-sub" id="stockValueSub">across all items</div>
+        </div>
+        <div class="stat-icon icon-green">📦</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="section-header">
+    <div class="section-title">Inventory</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn btn-ghost btn-sm" onclick="exportInventoryCSV()" data-role="admin">⬇ Export CSV</button>
+      <button class="btn btn-primary" onclick="openAddModal()" data-role="admin">＋ Add Item</button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <span class="search-ico">⌕</span>
+        <input type="text" id="searchInput" placeholder="Search by SKU or item name…">
+      </div>
+      <select id="stockFilter" class="filter-select" onchange="renderTable()">
+        <option value="all">All Stock</option>
+        <option value="low">Low Stock</option>
+        <option value="out">Out of Stock</option>
+        <option value="ok">In Stock</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU / Item</th>
+            <th>QTY</th>
+            <th>Original Price</th>
+            <th>Price / PC</th>
+            <th>Margin</th>
+            <th>Total Sold</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOTTOM TWO-COL -->
+  <div class="two-col">
+
+    <!-- Sales Log -->
+    <div>
+      <div class="section-header">
+        <div class="section-title">Today's Sales Log</div>
+        <div style="display:flex;gap:10px;">
+          <a href="history.html" class="btn btn-ghost btn-sm">View History</a>
+          <button class="clear-btn" onclick="clearSales()" data-role="admin">Clear Today</button>
+        </div>
+      </div>
+      <div class="sales-card">
+        <div class="sales-card-header">
+          <span class="sales-label">Today's Transactions</span>
+          <span class="sales-count" id="saleCount">0 records</span>
+        </div>
+        <div class="sales-scroll" id="salesLogBody"></div>
+      </div>
+    </div>
+
+    <!-- ── CART / SELL PANEL ── -->
+    <div>
+      <div class="section-header">
+        <div class="section-title">Sell — Cart</div>
+      </div>
+      <div class="sell-panel">
+        <div class="panel-title">
+          <span class="live-dot"></span> New Transaction
+        </div>
+
+        <!-- Add item to cart -->
+        <div class="cart-add-row">
+          <div class="form-group" style="flex:1;margin:0;">
+            <label>Item</label>
+            <select id="sellItem" onchange="onSellItemChange()">
+              <option value="">— select item —</option>
+            </select>
+          </div>
+          <div class="form-group" style="width:82px;margin:0;">
+            <label>Qty</label>
+            <input type="number" id="sellQty" min="1" value="1" style="text-align:center;">
+          </div>
+          <div style="padding-top:22px;">
+            <button class="btn btn-sm btn-sell" onclick="addToCart()" style="height:37px;">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Item info preview -->
+        <div class="info-box" id="selectedInfo">
+          <div class="info-row"><span>Stock</span> <span class="info-val" id="infoStock">—</span></div>
+          <div class="info-row"><span>Price/pc</span><span class="info-val" id="infoPrice">—</span></div>
+        </div>
+
+        <!-- Cart items -->
+        <div class="cart-section">
+          <div class="cart-header">
+            <span class="cart-lbl">Cart <span class="cart-count" id="cartCount">0</span></span>
+            <button class="clear-btn" onclick="clearCart()">Clear cart</button>
+          </div>
+          <div id="cartItems" class="cart-items">
+            <div class="cart-empty" id="cartEmpty">No items in cart yet.</div>
+          </div>
+        </div>
+
+        <!-- Cart totals -->
+        <div class="cart-totals">
+          <div class="info-row"><span>Subtotal</span><span class="info-val" id="cartSubtotal">₱0.00</span></div>
+          <div class="info-row"><span>Revenue</span> <span class="info-val" style="color:var(--green)" id="cartRevenue">₱0.00</span></div>
+        </div>
+
+        <!-- Checkout fields -->
+        <div class="form-group" style="margin-top:12px;">
+          <label>Customer Name <span style="color:var(--text4);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <input type="text" id="sellCustomer" placeholder="e.g. Walk-in">
+        </div>
+        <div class="form-group">
+          <label>Payment Method</label>
+          <select id="sellPayment">
+            <option value="Cash">Cash</option>
+            <option value="GCash">GCash</option>
+            <option value="Maya">Maya</option>
+            <option value="Card">Card</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="processCartSale()" id="checkoutBtn" disabled>
+          ✓&nbsp; Confirm Sale
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="lowStockAlert" class="low-stock-strip" style="display:none;"></div>
+
+</main>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add New Item</div>
+      <button class="modal-close" onclick="closeModal('itemModal')">✕</button>
+    </div>
+    <div class="modal-grid">
+      <div class="form-group full">
+        <label>Item Name</label>
+        <input type="text" id="mName" placeholder="e.g. Wireless Headphones">
+      </div>
+      <div class="form-group">
+        <label>SKU</label>
+        <input type="text" id="mSku" placeholder="e.g. WH-001">
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="mQty" min="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Original Price (₱)</label>
+        <input type="number" id="mOrigPrice" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Price per Piece (₱)</label>
+        <input type="number" id="mPrice" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Low Stock Threshold</label>
+        <input type="number" id="mThreshold" min="1" placeholder="5">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost"   onclick="closeModal('itemModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">Confirm Delete</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <p class="confirm-text" id="confirmMsg"></p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost"  onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTOCK MODAL -->
+<div class="modal-overlay" id="restockModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title">Restock Item</div>
+      <button class="modal-close" onclick="closeModal('restockModal')">✕</button>
+    </div>
+    <p style="font-size:0.88rem;color:var(--text2);margin-bottom:16px;">Adding stock to: <strong id="restockName"></strong></p>
+    <div class="form-group">
+      <label>Quantity to Add</label>
+      <input type="number" id="restockQty" min="1" placeholder="e.g. 10">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost"   onclick="closeModal('restockModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmRestock()">Add Stock</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">🧾 Sale Receipt</div>
+      <button class="modal-close" onclick="closeModal('receiptModal')">✕</button>
+    </div>
+    <div id="receiptBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('receiptModal')">Close</button>
+      <button class="btn btn-primary" onclick="printReceipt()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toastContainer"></div>
+<script src="auth.js"></script>
+<script src="sheets.js"></script>
+<script src="app.js"></script>
+<script>
+// ── SERVICE WORKER REGISTRATION ───────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        console.log('[PWA] Service Worker registered:', reg.scope);
+        navigator.serviceWorker.addEventListener('message', e => {
+          if (e.data?.type === 'GET_SHEETS_URL') {
+            reg.active?.postMessage({ type: 'SHEETS_URL', url: typeof SHEETS_URL !== 'undefined' ? SHEETS_URL : '' });
+          }
+        });
+        window.addEventListener('online', () => {
+          reg.sync?.register('wilcy-sheets-sync').catch(() => {});
+        });
+      })
+      .catch(err => console.warn('[PWA] SW registration failed:', err));
+  });
+}
+
+// ── INSTALL PROMPT (Android / Chrome) ────────────────────────────────────────
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!window.matchMedia('(display-mode: standalone)').matches) showInstallBanner();
+});
+
+function showInstallBanner() {
+  if (document.getElementById('installBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = [
+    'position:fixed','bottom:20px','left:50%','transform:translateX(-50%)',
+    'background:#1e2740','border:1px solid #4f6ef740','color:#e2e8f0',
+    'padding:12px 20px','border-radius:12px','display:flex','align-items:center',
+    'gap:12px','box-shadow:0 8px 32px #0008','z-index:9999',
+    'font-family:inherit','font-size:0.85rem','white-space:nowrap'
+  ].join(';');
+  banner.innerHTML = `
+    <span>📲</span>
+    <span>Install WILCY POS as an app</span>
+    <button onclick="installPWA()" style="background:#4f6ef7;color:#fff;border:none;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:0.82rem;">Install</button>
+    <button onclick="this.parentElement.remove()" style="background:transparent;color:#888;border:none;cursor:pointer;font-size:1.1rem;padding:0 4px;">✕</button>
+  `;
+  document.body.appendChild(banner);
+  setTimeout(() => banner?.remove(), 12000);
+}
+
+async function installPWA() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('installBanner')?.remove();
+  if (outcome === 'accepted') toast('WILCY POS installed! 🎉', 'success');
+}
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  document.getElementById('installBanner')?.remove();
+});
+</script>
+</body>
+</html>

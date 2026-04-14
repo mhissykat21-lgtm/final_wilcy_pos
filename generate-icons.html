@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WILCY POS — Icon Generator</title>
+  <style>
+    body { font-family: sans-serif; background: #0f1117; color: #fff; padding: 32px; }
+    h2   { margin-bottom: 8px; }
+    p    { color: #888; margin-bottom: 24px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 32px; }
+    canvas { border-radius: 20%; box-shadow: 0 4px 20px #0008; }
+    button {
+      background: #4f6ef7; color: #fff; border: none; padding: 12px 28px;
+      border-radius: 8px; font-size: 1rem; cursor: pointer; margin-right: 12px;
+    }
+    button:hover { background: #3a58d4; }
+    .label { font-size: 11px; color: #666; text-align: center; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<h2>WILCY POS — PWA Icon Generator</h2>
+<p>Click "Download All Icons" to generate and save all required icon sizes into an <code>icons/</code> folder.</p>
+
+<div class="grid" id="grid"></div>
+<button onclick="downloadAll()">⬇ Download All Icons</button>
+
+<script>
+const SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
+
+function drawIcon(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width  = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  const r = size * 0.18;  // corner radius
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, size, size);
+  grad.addColorStop(0, '#1a2340');
+  grad.addColorStop(1, '#0f1117');
+  roundRect(ctx, 0, 0, size, size, r);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Accent ring
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size * 0.44, 0, Math.PI * 2);
+  ctx.strokeStyle = '#4f6ef730';
+  ctx.lineWidth = size * 0.04;
+  ctx.stroke();
+
+  // "W" letter
+  ctx.font = `bold ${size * 0.52}px Georgia, serif`;
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Glow effect
+  ctx.shadowColor  = '#4f6ef7';
+  ctx.shadowBlur   = size * 0.12;
+  ctx.fillStyle    = '#4f6ef7';
+  ctx.fillText('W', size / 2, size * 0.5);
+
+  ctx.shadowBlur = 0;
+
+  // Thin underline accent
+  const uw = size * 0.32;
+  const uy = size * 0.76;
+  const uGrad = ctx.createLinearGradient(size/2 - uw/2, 0, size/2 + uw/2, 0);
+  uGrad.addColorStop(0, '#4f6ef700');
+  uGrad.addColorStop(0.5, '#4f6ef7');
+  uGrad.addColorStop(1, '#4f6ef700');
+  ctx.fillStyle = uGrad;
+  ctx.fillRect(size/2 - uw/2, uy, uw, size * 0.025);
+
+  return canvas;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// Preview grid
+const grid = document.getElementById('grid');
+SIZES.forEach(size => {
+  const canvas = drawIcon(size);
+  const wrap   = document.createElement('div');
+  canvas.style.width  = Math.min(size, 96) + 'px';
+  canvas.style.height = Math.min(size, 96) + 'px';
+  const label = document.createElement('div');
+  label.className   = 'label';
+  label.textContent = size + '×' + size;
+  wrap.appendChild(canvas);
+  wrap.appendChild(label);
+  grid.appendChild(wrap);
+});
+
+function downloadAll() {
+  SIZES.forEach((size, i) => {
+    setTimeout(() => {
+      const canvas = drawIcon(size);
+      const a = document.createElement('a');
+      a.download = `icon-${size}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }, i * 150);
+  });
+}
+</script>
+</body>
+</html>
