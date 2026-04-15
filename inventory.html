@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WILCY POS — Inventory</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f6ef7">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WILCY POS">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">W</div>
+    <span class="logo-name">WILCY <span>POS</span></span>
+    <span class="logo-tag">Inventory</span>
+  </div>
+  <nav class="main-nav">
+    <a href="index.html"     class="nav-link">Dashboard</a>
+    <a href="inventory.html" class="nav-link active">Inventory</a>
+    <a href="history.html"   class="nav-link">Sales History</a>
+
+  </nav>
+  <div class="header-right">
+    <div id="syncStatus" class="sync-badge sync-local">◉ Local</div>
+    <div class="date-chip" id="dateBadge"></div>
+    <div id="userChip"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- LOW STOCK ALERT -->
+  <div id="lowStockAlert" class="low-stock-strip" style="display:none;margin-bottom:16px;"></div>
+
+  <!-- INVENTORY TABLE -->
+  <div class="section-header">
+    <div class="section-title">Inventory Management</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn btn-ghost btn-sm" onclick="exportInventoryCSV()" data-role="admin">⬇ Export CSV</button>
+      <button class="btn btn-primary" onclick="openAddModal()" data-role="admin">＋ Add Item</button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <span class="search-ico">⌕</span>
+        <input type="text" id="searchInput" placeholder="Search by SKU or item name…">
+      </div>
+      <select id="stockFilter" class="filter-select" onchange="renderTable(true)">
+        <option value="all">All Stock</option>
+        <option value="low">Low Stock</option>
+        <option value="out">Out of Stock</option>
+        <option value="ok">In Stock</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU / Item</th>
+            <th>QTY</th>
+            <th>Original Price</th>
+            <th>Price / PC</th>
+            <th>Margin</th>
+            <th>Total Sold</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+    <div class="table-footer" id="invPaginationBar"></div>
+  </div>
+
+</main>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add New Item</div>
+      <button class="modal-close" onclick="closeModal('itemModal')">✕</button>
+    </div>
+    <div class="modal-grid">
+      <div class="form-group full">
+        <label>Item Name</label>
+        <input type="text" id="mName" placeholder="e.g. Wireless Headphones">
+      </div>
+      <div class="form-group">
+        <label>SKU</label>
+        <input type="text" id="mSku" placeholder="e.g. WH-001">
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="mQty" min="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Original Price (₱)</label>
+        <input type="number" id="mOrigPrice" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Price per Piece (₱)</label>
+        <input type="number" id="mPrice" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Low Stock Threshold</label>
+        <input type="number" id="mThreshold" min="1" placeholder="5">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost"   onclick="closeModal('itemModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">Confirm Delete</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <p class="confirm-text" id="confirmMsg"></p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost"  onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTOCK MODAL -->
+<div class="modal-overlay" id="restockModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title">Restock Item</div>
+      <button class="modal-close" onclick="closeModal('restockModal')">✕</button>
+    </div>
+    <p style="font-size:0.88rem;color:var(--text2);margin-bottom:16px;">Adding stock to: <strong id="restockName"></strong></p>
+    <div class="form-group">
+      <label>Quantity to Add</label>
+      <input type="number" id="restockQty" min="1" placeholder="e.g. 10">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost"   onclick="closeModal('restockModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmRestock()">Add Stock</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toastContainer"></div>
+<script src="auth.js"></script>
+<script src="sheets.js"></script>
+<script src="inventory.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
